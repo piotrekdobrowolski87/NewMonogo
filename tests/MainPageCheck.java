@@ -1,5 +1,6 @@
 package com.monogo.tests;
 
+import com.monogo.common.CommonMethods;
 import com.monogo.common.SetBrowser;
 import com.monogo.pages.MainPage;
 import org.openqa.selenium.WebDriver;
@@ -12,11 +13,12 @@ public class MainPageCheck {
 
     WebDriver driver;
     MainPage mainPage;
+    CommonMethods commonMethods;
 
     @BeforeTest(alwaysRun = true)
     @Parameters({"browser","url","width","height"})
     public void openMainPage(String browser, String url, int width, int height){
-        System.out.println(browser);
+        System.out.println("[LOG] Przeglądarka: " + browser + ", rozdzielczość: " + width + " x " + height);
         driver = new SetBrowser().openBrowserWindow(browser,width,height,url);
     }
 
@@ -28,7 +30,7 @@ public class MainPageCheck {
 
     @Test(priority = 2)
     public void mainSectionsReview(){
-        mainPage.checkMainPagesection();
+        mainPage.checkMainPageSection();
     }
 
     @Test(priority = 3)
@@ -43,7 +45,8 @@ public class MainPageCheck {
 
     @AfterTest(alwaysRun = true)
     public void closeDriver(){
+        commonMethods = new CommonMethods(driver);
         driver.quit();
-        mainPage.checkAllAssertions();
+        commonMethods.log("Testy strony głównej zakończone");
     }
 }

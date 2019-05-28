@@ -1,10 +1,8 @@
 package com.monogo.pages;
 
 import com.monogo.common.CommonMethods;
-import com.monogo.tests.Cart;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.PageFactory;
@@ -15,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainPage {
+
+    @FindBy(how = How.XPATH, using = "//img[@class='b-header-main__logo']")
+    private WebElement logo;
 
     @FindBy(how = How.XPATH, using = "//*[@class='b-header-main']")
     private WebElement header;
@@ -34,6 +35,30 @@ public class MainPage {
     @FindBy(how = How.XPATH, using = "//a[@class='promoted-products-title']")
     private List<WebElement> promotedProductsCategoryNames;
 
+    @FindBy(how = How.XPATH, using = "//button[@class='merlin-legal-note__close']")
+    private WebElement closeLegalNote;
+
+    @FindBy(how = How.XPATH, using = "//*[@class='b-header-main__cart-holder']")
+    private WebElement cart;
+
+    @FindBy(how = How.XPATH, using = "//span[@class='b-header-main__cart-goods quantity-text'][@id='header-cart-item-count-text']")
+    private WebElement cartCouter;
+
+    @FindBy(how = How.XPATH, using = "//div[@class='ui-dialog-buttonset']/button[1]")
+    private WebElement backToShopAfterAddToCart;
+
+    @FindBy(how = How.XPATH, using = "//div[@class='ui-dialog-buttonset']/button[2]")
+    private WebElement goToCartAfterAddToCart;
+
+    @FindBy(how = How.XPATH, using = "//div[@class='promoted-products__category b-products-wrap'][1]//li[@data-index]//a[@class='b-products-list__title product-link']")
+    private List<WebElement> promotedProducts1Names;
+
+    @FindBy(how = How.XPATH, using = "//div[@class='promoted-products__category b-products-wrap'][1]//li[@data-index]//div[@class='b-products-list__price-holder']//a[@class='b-products-list__price-current product-link']")
+    private List<WebElement> promotedProducts1Price;
+
+    @FindBy(how = How.XPATH, using = "//div[@class='promoted-products__category b-products-wrap'][1]//li[@data-index]//div[@class='b-products-list__price-holder']//button")
+    private List<WebElement> promotedProducts1AddToCartButtons;
+
 
     private WebDriver driver;
     private CommonMethods commonMethods;
@@ -41,31 +66,31 @@ public class MainPage {
     private String url = "https://merlin.pl/";
     private int owlItemsToCheck = 3;
     private int expectedShopsSharesList = 3;
+    private String emptyCart = "pusty";
     private List<String> promotedProductsCategoryNamesValues = new ArrayList<>();
-    CartPage cart;
 
     public MainPage(WebDriver driver) {
         this.driver = driver;
         commonMethods = new CommonMethods(this.driver);
         PageFactory.initElements(driver, this);
-        cart = new CartPage(this.driver);
     }
 
 
     public void checkCurrentUrl() {
-        String actualUrl = driver.getCurrentUrl();
-        Assert.assertEquals(actualUrl, url);
+        commonMethods.checkCurrentUrl(url);
     }
 
-    public void checkMainPagesection() {
+    public void checkMainPageSection() {
         setCategoryNames();
 
         //sprawdzenie widocznosci nagłówków
+        commonMethods.waitForViibility(logo);
         commonMethods.waitForViibility(header);
         commonMethods.waitForViibility(mainMenu);
 
-        //sprawdzam widoczność licznika koszyka
-        cart.checkIfCartIsVisible();
+        //sprawdzam widoczność koszyka
+        commonMethods.waitForViibility(cart);
+        commonMethods.waitForViibility(cartCouter);
 
         //sprawdzenie widoczności shareShopsList
         commonMethods.waitForVisibilityOfCollection(shopsSharesList);
@@ -76,7 +101,7 @@ public class MainPage {
         int actualPromotedCaterory = promotedProductsCategory.size();
         int actualPromotedCategoryNames = promotedProductsCategoryNames.size();
         int expectedSize = promotedProductsCategoryNamesValues.size();
-        softAssert.assertEquals(actualPromotedCategoryNames, expectedSize, "Wyświetla się za dużo kategorii promocyjnych");
+        softAssert.assertEquals(actualPromotedCategoryNames, expectedSize, "Wyświetla się za dużo nazw kategorii promocyjnych");
         softAssert.assertEquals(actualPromotedCaterory, expectedSize, "Wyświetla się za dużo kategorii promocoyjnych");
 
         //sprawdzenie sekcji promotedProducts
@@ -91,11 +116,16 @@ public class MainPage {
             commonMethods.moveToElement(promotedProductsCategory.get(i));
             softAssert.assertEquals(actualName, expectedName, "Nazawa kategorii jest nie zgodna");
         }
+        softAssert.assertAll();
+        commonMethods.log("Główne elementy sklepu sprawdzone");
     }
 
     public void checkIfCartIsEmpty(){
-        Boolean emptyCart = cart.chceckIfCartIsEmpty();
-        softAssert.assertTrue(emptyCart,"Koszyk posiada zawartość, powinien byc pusty");
+            commonMethods.moveToElement(cartCouter);
+            String actualCartState = cartCouter.getText();
+
+        Assert.assertEquals(emptyCart,actualCartState,"Koszyk nie jest pusty a powinien być");
+        commonMethods.log("Koszyk jest pusty");
     }
 
     public void checkOwlAnimation() {
@@ -112,10 +142,45 @@ public class MainPage {
                 }
             }
         }
+        commonMethods.log("Animacja sprawdzona");
     }
 
-    public void checkAllAssertions(){
-        softAssert.assertAll();
+    public WebElement getLogo(){
+        return logo;
+    }
+
+    public WebElement getCart(){
+        return cart;
+    }
+
+    public WebElement getCartCouter(){
+        return cartCouter;
+    }
+
+    public WebElement getBackToShopAfterAddToCart(){
+        return backToShopAfterAddToCart;
+    }
+
+    public WebElement getGoToCartAfterAddToCart(){
+        return goToCartAfterAddToCart;
+    }
+
+    public List<WebElement> getPromotedProducts1Names(){
+        return promotedProducts1Names;
+    }
+
+    public List<WebElement> getPromotedProducts1Price(){
+        return promotedProducts1Price;
+    }
+
+    public List<WebElement> getPromotedProducts1AddToCartButtons(){
+        return promotedProducts1AddToCartButtons;
+    }
+
+    public void closeLegalNote(){
+        commonMethods.waitForViibility(closeLegalNote);
+        commonMethods.waitForClick(closeLegalNote);
+        closeLegalNote.click();
     }
 
     private void setCategoryNames() {
